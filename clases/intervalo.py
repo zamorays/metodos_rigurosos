@@ -304,7 +304,7 @@ class Intervalo(object):
 
                         
     def sin(self):
-        return self.cos(self - math.pi/2)
+        return self.cos(self-math.pi/2)
         
         
        
@@ -381,3 +381,33 @@ def cos(x):
         return x.cos()
     except:
         return math.cos(x)
+        
+def sin(x):
+    try:
+        return x.sin()
+    except:
+        return math.sin(x)
+
+def tan(x):
+    try:
+        return x.tan()
+    except:
+        return math.tan(x)
+
+def exp(x):
+    try:
+        return x.exp()
+    except:
+        return math.exp(x)
+        
+def log(x):
+    try:
+        return x.log()
+    except:
+        return math.log(x)
+
+def sqrt(x):
+    try:
+        return x.sqrt()
+    except:
+        return math.sqrt(x)
