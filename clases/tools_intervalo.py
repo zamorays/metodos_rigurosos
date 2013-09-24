@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-# Escribimos funciones con el nombre test_ALGO
-from sympy import mpmath as mp
+
 from intervalo import *
 import matplotlib
 import matplotlib.pyplot as plt
@@ -35,3 +34,20 @@ def plotFIntevalo(listInterv,Fx=None):
     #plt.Rectangle((,))
     plt.plot(np.linspace(listInterv[0].lo,listInterv[-1].hi,100),np.cos(np.linspace(listInterv[0].lo,listInterv[-1].hi,100)),color=(0,0,0))
     return plotF
+
+def plot_intevalo(a,y=0):
+    mins=[]
+    maxs=[]
+    for i in a:
+      y=y+0.05
+      col=np.random.uniform(0.0,1.0,[3])
+      plt.figure(1)
+      plt.hlines(y,i.lo,i.hi,colors=tuple(col),linewidths=1.5)
+      plt.vlines(i.lo,y-0.03,y+0.03,colors=tuple(col),linewidths=1.5)
+      plt.vlines(i.hi,y-0.03,y+0.03,colors=tuple(col),linewidths=1.5)
+      mins.append(i.lo)
+      maxs.append(i.hi)
+      
+    plt.xlim(min(mins)-1.0,max(maxs)+1.0)
+    #plt.ylim(y-0.5,y+0.5)
+    return plt.show()
