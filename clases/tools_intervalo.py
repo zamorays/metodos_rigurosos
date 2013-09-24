@@ -17,7 +17,7 @@ def plotFIntevalo(listInterv,Fx=None):
   nlen = len(listInterv)
   if Fx != None:
     listFx=Fx(listInterv)
-    plotF = plt.figure(1)
+    plotF = plt.figure(1,figsize=(12,12),dpi=200)
     ax = plotF.add_subplot(111)
     plt.plot(np.linspace(listInterv[0].lo,listInterv[-1].hi,100),Fx(np.linspace(listInterv[0].lo,listInterv[-1].hi,100)),color=(rnd[0],rnd[1],rnd[2]))
     plt.xlabel('$X$')
