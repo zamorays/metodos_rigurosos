@@ -2,7 +2,7 @@
 
 # Escribimos funciones con el nombre test_ALGO
 from sympy import mpmath as mp
-from intervalo import sin, cos, sqrt, Intervalo
+from intervalo import *
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,15 +17,18 @@ def plotFIntevalo(listInterv,Fx=None):
   nlen = len(listInterv)
   if Fx != None:
     listFx=Fx(listInterv)
-    plotF = plt.figure()
+    plotF = plt.figure(1)
     ax = plotF.add_subplot(111)
     plt.plot(np.linspace(listInterv[0].lo,listInterv[-1].hi,100),Fx(np.linspace(listInterv[0].lo,listInterv[-1].hi,100)),color=(rnd[0],rnd[1],rnd[2]))
+    plt.xlabel('$X$')
+    plt.ylabel('$F ( X )$')
     #rect=matplotlib.patches.Rectangle((listInterv[0].lo,listFx[0].lo),listInterv[0].width(),listFx[0].width(),color=(rnd[2],rnd[0],rnd[1]),alpha=0.2)
     #ax.add_patch(rect)
     pltrec = [matplotlib.patches.Rectangle((listInterv[i].lo,listFx[i].lo),listInterv[i].width(),listFx[i].width(),color=(rnd[2],rnd[0],rnd[1]),alpha=0.2) for i in range(nlen)]
     recs   = [ax.add_patch(rec) for rec in pltrec]
     plt.ylim(min(listFx).lo,max(listFx).hi)
-    return plotF,listFx
+    ##plt.show()
+    return listFx
   
   else:
     plotF = plt.figure(1)

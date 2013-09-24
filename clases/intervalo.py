@@ -304,7 +304,7 @@ class Intervalo(object):
 
                         
     def sin(self):
-        return self.cos(self-math.pi/2)
+        return self.cos(self-math.pi/2.0)
         
         
        
@@ -366,8 +366,8 @@ class Intervalo(object):
         return Intervalo(math.arctan(self.lo),math.arctan(self.hi))
 
     def tan(self):
-        
-        if self.width() < 2*(pi) and math.tan(self.lo) <= math.tan(self.hi):
+        pi = math.pi
+        if self.width() < 2*pi and math.tan(self.lo) <= math.tan(self.hi):
             return Intervalo(math.tan(self.lo), math.tan(self.hi))
         else:
             print 'Advertencia: El intervalo contiene una singularidad'
