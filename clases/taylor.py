@@ -1,40 +1,99 @@
 # -*- coding: utf-8 -*- 
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 class taylorDiff(object):
     
-    def __init__(self, jet, order=15):
+    def __init__(self, jet=0.0, order=15):
         self.jet = np.array(jet)
         self.order = int(order)
         if self.jet.size != order+1:
 	  self.jet.resize(int(order)+1) # len mayor a order en 1
-        
-        
-        
+    
     #Representaciones
     
-    def __repr__(self):
-        return "JET [{},order={}]".format(self.jet,self.order)
+    def __repr__(self): #Convention
+        return "taylorDiff({},{})".format(repr(self.jet),repr(self.order))
     
-    def __str__(self):
-        return "JET [{},order={}]".format(self.jet,self.order)
-
-    #def _repr_html_(self):
-        #reprn = "[{}, {}]".format(self.valor, self.deriv)
-        #reprn = reprn.replace("inf", r"&infin;")
-        #return reprn
+    def __str__(self): #Pretty form
+        s = ''
+        for i in range(0, len(self.jet)):
+            if self.jet[i] != 0:
+                s += ' + %g*x^%d' % (self.jet[i], i)
+        # Fix layout
+        s = s.replace('+ -', '- ')
+        s = s.replace('x^0', '1')
+        s = s.replace(' 1*', ' ')
+        s = s.replace('x^1 ', 'x ')
+        #s = s.replace('x^1', 'x') # will replace x^100 by x^00
+        if s[0:3] == ' + ':  # remove initial +
+            s = s[3:]
+        if s[0:3] == ' - ':  # fix spaces for initial -
+            s = '-' + s[3:]
+        return s
+        
+    def _repr_html_(self):
+        pass
     
     def _repr_latex_(self):
-        return "JET [{},order={}]".format(self.jet,self.order)
+        s = '$'
+        for i in range(0, len(self.jet)):
+            if self.jet[i] != 0:
+                s += ' + %g\cdot x^{%d}' % (self.jet[i], i)
+        # Fix layout
+        s = s.replace('+ -', '- ')
+        s = s.replace('x^0', '1')
+        s = s.replace(' 1 ', ' ')
+        s = s.replace('x^1 ', 'x ')
+        #s = s.replace('x^1', 'x') # will replace x^100 by x^00
+        if s[0:3] == '+':  # remove initial +
+            s = s[3:]
+        if s[0:3] == ' - ':  # fix spaces for initial -
+            s = '-' + s[3:]
+        return s+'$'
+        
     #Horners RULE
-    def __call__(self,x0):
-      s=self.jet[-1]
+    def __call__(self,x0): # OJO con sobrecarga de operadores jala para vectores, matrices, etc !!!!!!
+      s = self.jet[-1]
       for i in range(1,self.order+1):
 	s = self.jet[-(i+1)] + s*x0
 	
       return s
       
+    def draw(self, npoint=100, xdomain = [-1.,1.],extraF=None):
+      rnd = np.random.uniform(0.,1.,3) #Color
+      lbl = self.__str__()
+      if len(lbl) >= 60:
+	lbl = lbl[0:60]+'...'
+      plotF = plt.figure(1,figsize=(12,8),dpi=300)
+      xgridp = np.linspace(xdomain[0],xdomain[1],npoint)
+      fxgridp = self.__call__(xgridp)
+      plt.plot(xgridp,fxgridp,color=(rnd[0],rnd[1],0.5),label=lbl,marker='o')
+      plt.xlabel('$x$', fontsize=20)
+      plt.ylabel('$P_{taylor} ( x )$',fontsize=20)
+      if extraF != None:
+	plt.plot(xgridp,extraF(xgridp),color=(rnd[0],rnd[1],rnd[2]),label='Exact P(x)')
+      
+      plt.legend(loc=2)
+    
+    def set_order(self,orden=25):
+      self.__init__(self.jet,orden)
+      
+    def cut_off(self,tol=1.e-15):
+      nc = self.jet.nonzero()[0]
+      idcero = None
+      for i in range(nc.size-1):
+	reldiff = abs(self.jet[nc[i+1]])/abs(self.jet[nc[i]])
+	if reldiff <= tol:
+	  self.jet[nc[i+1]] = 0.
+	  idcero = nc[i+1]
+	  break
+	  
+      if idcero != None:
+	self.jet[idcero:] = 0.
+      
+	
     # Operaciones básicas
     def __add__(self, otro):
 	try:
@@ -51,23 +110,31 @@ class taylorDiff(object):
 	  return self + taylorDiff(otro)
 	  
     def __radd__(self, otro):
-        
         return self + otro
         
     def __neg__(self):
 	return taylorDiff(-self.jet,self.order)
+	
+    def _last_non_zero(self): #OPTIMIZACION para no calcular mas alla de los elementos distintos de ceros !
+	return self.jet.nonzero()[0][-1] #Ultimo coeficeinte distinto de zero
+	
+    def _first_non_zero(self): #OPTIMIZACION para no calcular mas alla de los elementos distintos de ceros !
+	return self.jet.nonzero()[0][0] #Ultimo coeficeinte distinto de zero
     
     def deriv(self,n=1):
 	#aux=[]*(self.order-n)
-	aux = []
-	for k in range(n,self.order+1):
-	  auxin = 1
-	  for i in range(n):
-	    auxin *= k-i
+	if self.jet.nonzero()[0].size > 0:
+	  aux = []
+	  for k in range(n,self._last_non_zero()+1):#+1
+	    auxin = 1.#np.int32(1)
+	    for i in range(n):
+	      auxin *= k-i
+	    
+	    aux.append(auxin*self.jet[k])
 	  
-	  aux.append(auxin*self.jet[k])
-
-	return taylorDiff(aux,self.order) 
+	  return taylorDiff(aux,self.order)
+	else:
+	  return taylorDiff([0.],self.order)
     
     def sameOrd(self,otro):
       orden = max(self.order,otro.order)
@@ -93,7 +160,7 @@ class taylorDiff(object):
 	    self.order=orden
 	    otro.order=orden
 	    return taylorDiff(self.jet - otro.jet ,orden)
-	except:				  ## ADVERTENCIA!!!!!!!
+	except:		## ADVERTENCIA!!!!!!!
 	    return self.__sub__(taylorDiff(otro)) ## (RESULETO)Error de signo si es "float - taylorDiff" pero bien con el reciproco!
 	  
     def __rsub__(self, otro):
@@ -222,7 +289,7 @@ class taylorDiff(object):
         if not(isinstance(power,taylorDiff)):
 	  if isinstance(power,int):
 	    if power == 0:
-	      return 1.0
+	      return taylorDiff(1.0)
 	    else:
 	      if method == 1:
 		#print 'Method',method
@@ -270,6 +337,7 @@ class taylorDiff(object):
 		
 	else:
 	  print 'FALTA DESARROLLO'
+	  raise NotImplementedError
         #if not isinstance(power,taylorDiff) and self.jet[0] != 0:
 	  #aux=[self.jet[0]**power] ## k=0 element
 	  #for k in range(orden)[1:orden]:
